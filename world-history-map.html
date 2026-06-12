@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chronos — A Map of World History</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0d0b;
+    --bg2: #161410;
+    --bg3: #1e1b16;
+    --surface: #242018;
+    --border: rgba(255,255,255,0.08);
+    --border-mid: rgba(255,255,255,0.15);
+    --text: #e8e0ce;
+    --text-muted: #8a8070;
+    --text-dim: #5a5448;
+    --amber: #d4892a;
+    --amber-light: #f0a83a;
+    --amber-dim: #7a4d10;
+    --coral: #c45a30;
+    --teal: #1d9e75;
+    --blue: #378add;
+    --purple: #7f77dd;
+    --serif: 'Playfair Display', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+    --spine-width: 72px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ─────────────────────────────── */
+  header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    height: 56px;
+    background: rgba(14,13,11,0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .logo {
+    font-family: var(--serif);
+    font-size: 18px;
+    letter-spacing: 0.04em;
+    color: var(--amber-light);
+    text-decoration: none;
+  }
+  .logo span { color: var(--text-muted); font-style: italic; font-size: 13px; margin-left: 8px; }
+
+  nav { display: flex; gap: 1.5rem; }
+  nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    transition: color 0.2s;
+  }
+  nav a:hover { color: var(--text); }
+
+  /* ── HERO ────────────────────────────────── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 var(--spine-width) 6rem calc(var(--spine-width) + 2rem);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 70% 40%, rgba(212,137,42,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 20% 70%, rgba(55,138,221,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+  }
+
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(3rem, 7vw, 6rem);
+    font-weight: 400;
+    line-height: 1.05;
+    color: var(--text);
+    max-width: 700px;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--amber-light);
+  }
+
+  .hero-sub {
+    max-width: 480px;
+    color: var(--text-muted);
+    font-size: 15px;
+    line-height: 1.75;
+    margin-bottom: 2.5rem;
+  }
+
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--amber);
+    color: #0e0d0b;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    padding: 12px 24px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .hero-cta:hover { background: var(--amber-light); }
+  .hero-cta svg { width: 14px; height: 14px; }
+
+  /* ── TIMELINE SPINE ──────────────────────── */
+  .spine {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: var(--spine-width);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 80px;
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  .spine-line {
+    width: 1px;
+    flex: 1;
+    background: linear-gradient(to bottom, transparent, var(--amber-dim) 15%, var(--amber-dim) 85%, transparent);
+    position: absolute;
+    left: 50%;
+    top: 80px;
+    bottom: 40px;
+    transform: translateX(-50%);
+  }
+
+  .spine-dot {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1.5px solid var(--amber-dim);
+    transition: all 0.3s;
+    pointer-events: all;
+    cursor: pointer;
+  }
+  .spine-dot.active {
+    background: var(--amber);
+    border-color: var(--amber-light);
+    box-shadow: 0 0 10px rgba(212,137,42,0.5);
+    width: 10px;
+    height: 10px;
+    transform: translateX(-50%) translateX(-1px);
+  }
+
+  .spine-label {
+    position: absolute;
+    left: calc(50% + 14px);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: color 0.3s;
+    pointer-events: all;
+    cursor: pointer;
+  }
+  .spine-label.active { color: var(--amber); }
+
+  /* ── MAIN LAYOUT ─────────────────────────── */
+  main {
+    padding-top: 56px;
+    padding-left: var(--spine-width);
+  }
+
+  /* ── ERA SECTIONS ────────────────────────── */
+  .era-section {
+    min-height: 100vh;
+    padding: 6rem 3rem 6rem 3rem;
+    border-top: 0.5px solid var(--border);
+    position: relative;
+  }
+
+  .era-section:nth-child(even) { background: var(--bg2); }
+
+  .era-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+    margin-bottom: 4rem;
+  }
+
+  .era-number {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .era-number::after {
+    content: '';
+    height: 0.5px;
+    width: 40px;
+    background: var(--amber-dim);
+    display: inline-block;
+  }
+
+  .era-title {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 400;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+  }
+
+  .era-dates {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 15px;
+    color: var(--amber);
+    margin-bottom: 1.5rem;
+  }
+
+  .era-summary {
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.8;
+    max-width: 520px;
+  }
+
+  .era-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    align-self: start;
+  }
+
+  .stat {
+    background: var(--bg3);
+    padding: 1.25rem 1.5rem;
+  }
+  .stat-label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-family: var(--serif);
+    font-size: 1.4rem;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  /* ── CIVILISATION CARDS ──────────────────── */
+  .civ-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .civ-card {
+    background: var(--bg3);
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .civ-card:hover { background: var(--surface); }
+
+  .civ-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+
+  .civ-name {
+    font-family: var(--serif);
+    font-size: 16px;
+    color: var(--text);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+  }
+
+  .civ-dates {
+    font-size: 12px;
+    color: var(--amber);
+    margin-bottom: 8px;
+    padding-left: 16px;
+  }
+
+  .civ-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+
+  .civ-tag {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 20px;
+    border: 0.5px solid;
+  }
+  .tag-empire { color: #d85a30; border-color: rgba(216,90,48,0.3); background: rgba(216,90,48,0.07); }
+  .tag-republic { color: #1d9e75; border-color: rgba(29,158,117,0.3); background: rgba(29,158,117,0.07); }
+  .tag-trade { color: #378add; border-color: rgba(55,138,221,0.3); background: rgba(55,138,221,0.07); }
+  .tag-turning { color: #7f77dd; border-color: rgba(127,119,221,0.3); background: rgba(127,119,221,0.07); }
+
+  /* ── MAP SECTION ─────────────────────────── */
+  .map-section {
+    padding: 5rem 3rem;
+    background: var(--bg);
+    border-top: 0.5px solid var(--border);
+  }
+
+  .section-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  .section-title {
+    font-family: var(--serif);
+    font-size: 2rem;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-sub {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 2rem;
+    max-width: 500px;
+  }
+
+  /* Map container */
+  .map-container {
+    position: relative;
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  #map-svg { display: block; width: 100%; }
+
+  .era-btn-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .map-era-btn {
+    cursor: pointer;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 0.5px solid var(--border-mid);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: var(--sans);
+    font-size: 12px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .map-era-btn.active {
+    background: var(--amber);
+    color: #0e0d0b;
+    border-color: transparent;
+  }
+  .map-era-btn:hover:not(.active) { border-color: var(--border-mid); color: var(--text); }
+
+  .event-dot-map {
+    position: absolute;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    transform: translate(-50%,-50%);
+    transition: transform 0.15s;
+    border: 1.5px solid var(--bg);
+  }
+  .event-dot-map:hover { transform: translate(-50%,-50%) scale(1.5); }
+
+  .map-tooltip {
+    position: absolute;
+    background: var(--surface);
+    border: 0.5px solid var(--border-mid);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: var(--text);
+    pointer-events: none;
+    z-index: 10;
+    min-width: 160px;
+    max-width: 220px;
+    display: none;
+  }
+
+  /* ── TIMELINE STRIP ──────────────────────── */
+  .timeline-section {
+    padding: 5rem 3rem;
+    background: var(--bg2);
+    border-top: 0.5px solid var(--border);
+  }
+
+  .timeline-strip {
+    position: relative;
+    margin-top: 3rem;
+    padding-bottom: 2rem;
+  }
+
+  .tl-axis {
+    position: absolute;
+    top: 20px;
+    left: 0; right: 0;
+    height: 0.5px;
+    background: var(--border-mid);
+  }
+
+  .tl-eras {
+    display: flex;
+    gap: 2px;
+    align-items: flex-start;
+    position: relative;
+    padding-top: 40px;
+  }
+
+  .tl-era {
+    flex: 1;
+    padding: 12px 10px;
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    min-width: 0;
+  }
+  .tl-era:hover { background: var(--surface); border-color: var(--amber-dim); }
+
+  .tl-era-label {
+    font-size: 11px;
+    color: var(--amber);
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tl-era-dates {
+    font-size: 10px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  .tl-tick {
+    position: absolute;
+    top: 20px;
+    width: 1px;
+    height: 10px;
+    background: var(--border-mid);
+    transform: translateX(-50%);
+  }
+  .tl-tick-label {
+    position: absolute;
+    top: 2px;
+    font-size: 10px;
+    color: var(--text-dim);
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+
+  /* ── ABOUT ───────────────────────────────── */
+  .about-section {
+    padding: 6rem 3rem;
+    border-top: 0.5px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 5rem;
+    align-items: start;
+  }
+
+  .about-label {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .about-title {
+    font-family: var(--serif);
+    font-size: 1.8rem;
+    font-weight: 400;
+    line-height: 1.2;
+    color: var(--text);
+  }
+
+  .about-body {
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.85;
+  }
+  .about-body p + p { margin-top: 1rem; }
+
+  /* ── FOOTER ──────────────────────────────── */
+  footer {
+    padding: 2rem 3rem;
+    border-top: 0.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  /* ── SCROLLED REVEAL ─────────────────────── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ── RESPONSIVE ──────────────────────────── */
+  @media (max-width: 768px) {
+    :root { --spine-width: 0px; }
+    .spine { display: none; }
+    .era-header { grid-template-columns: 1fr; gap: 2rem; }
+    .about-section { grid-template-columns: 1fr; gap: 2rem; }
+    .hero { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .era-section, .map-section, .timeline-section { padding-left: 1.5rem; padding-right: 1.5rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="#">Chronos <span>a map of world history</span></a>
+  <nav>
+    <a href="#eras">Eras</a>
+    <a href="#map">Map</a>
+    <a href="#timeline">Timeline</a>
+    <a href="#about">About</a>
+  </nav>
+</header>
+
+<!-- Timeline spine -->
+<aside class="spine" id="spine" aria-hidden="true">
+  <div class="spine-line"></div>
+</aside>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-bg"></div>
+    <p class="hero-eyebrow reveal">5,000 years of human civilisation</p>
+    <h1 class="reveal">Every empire<br>that ever <em>rose</em><br>and fell</h1>
+    <p class="hero-sub reveal">An interactive atlas mapping the civilisations, turning points, and ideas that shaped the world — from the first cities on the Euphrates to the digital age.</p>
+    <a href="#eras" class="hero-cta reveal">
+      Explore the eras
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 7h10M8 3l4 4-4 4"/></svg>
+    </a>
+  </section>
+
+  <!-- ERA SECTIONS -->
+  <div id="eras">
+
+  <!-- Ancient -->
+  <section class="era-section" id="era-ancient" data-era="ancient">
+    <div class="era-header reveal">
+      <div>
+        <div class="era-number">Era 01</div>
+        <h2 class="era-title">The Ancient world</h2>
+        <p class="era-dates">3000 – 500 BCE</p>
+        <p class="era-summary">The first cities appeared in four river valleys simultaneously — the Nile, Tigris-Euphrates, Indus, and Yellow River. Writing was invented to keep records. Kings claimed divinity. The great questions were: how do we feed a city, and how do we hold it together?</p>
+      </div>
+      <div class="era-stats">
+        <div class="stat"><div class="stat-label">Span</div><div class="stat-value">2,500 yrs</div></div>
+        <div class="stat"><div class="stat-label">Key invention</div><div class="stat-value">Writing</div></div>
+        <div class="stat"><div class="stat-label">Great power</div><div class="stat-value">Egypt</div></div>
+        <div class="stat"><div class="stat-label">Ended by</div><div class="stat-value">Iron Age</div></div>
+      </div>
+    </div>
+    <div class="civ-grid reveal" id="grid-ancient"></div>
+  </section>
+
+  <!-- Classical -->
+  <section class="era-section" id="era-classical" data-era="classical">
+    <div class="era-header reveal">
+      <div>
+        <div class="era-number">Era 02</div>
+        <h2 class="era-title">The Classical era</h2>
+        <p class="era-dates">500 BCE – 500 CE</p>
+        <p class="era-summary">The Axial Age reset humanity's moral and intellectual compass. Greek democracy, Roman law, Buddhist compassion, and Confucian ethics all emerged within a few centuries. Empires spanned continents. The first world-system of trade — the Silk Road — began to connect them.</p>
+      </div>
+      <div class="era-stats">
+        <div class="stat"><div class="stat-label">Span</div><div class="stat-value">1,000 yrs</div></div>
+        <div class="stat"><div class="stat-label">Key idea</div><div class="stat-value">Democracy</div></div>
+        <div class="stat"><div class="stat-label">Great power</div><div class="stat-value">Rome</div></div>
+        <div class="stat"><div class="stat-label">Ended by</div><div class="stat-value">Migrations</div></div>
+      </div>
+    </div>
+    <div class="civ-grid reveal" id="grid-classical"></div>
+  </section>
+
+  <!-- Medieval -->
+  <section class="era-section" id="era-medieval" data-era="medieval">
+    <div class="era-header reveal">
+      <div>
+        <div class="era-number">Era 03</div>
+        <h2 class="era-title">The Medieval era</h2>
+        <p class="era-dates">500 – 1400 CE</p>
+        <p class="era-summary">The fall of Rome did not darken the world — it reshuffled it. Byzantium preserved Greek learning. The Islamic Golden Age advanced mathematics, astronomy, and medicine. Tang China was the most cosmopolitan place on earth. The Mongols briefly unified Eurasia, enabling trade on a scale never seen before.</p>
+      </div>
+      <div class="era-stats">
+        <div class="stat"><div class="stat-label">Span</div><div class="stat-value">900 yrs</div></div>
+        <div class="stat"><div class="stat-label">Key network</div><div class="stat-value">Silk Road</div></div>
+        <div class="stat"><div class="stat-label">Great power</div><div class="stat-value">Mongols</div></div>
+        <div class="stat"><div class="stat-label">Ended by</div><div class="stat-value">Black Death</div></div>
+      </div>
+    </div>
+    <div class="civ-grid reveal" id="grid-medieval"></div>
+  </section>
+
+  <!-- Early Modern -->
+  <section class="era-section" id="era-early_modern" data-era="early_modern">
+    <div class="era-header reveal">
+      <div>
+        <div class="era-number">Era 04</div>
+        <h2 class="era-title">The Early modern era</h2>
+        <p class="era-dates">1400 – 1800</p>
+        <p class="era-summary">Europe's ships connected the world's hemispheres for the first time, with catastrophic consequences for the Americas and Africa. The printing press spread ideas faster than power could suppress them. Gunpowder transformed warfare. The Scientific Revolution asked whether God's universe was also a machine.</p>
+      </div>
+      <div class="era-stats">
+        <div class="stat"><div class="stat-label">Span</div><div class="stat-value">400 yrs</div></div>
+        <div class="stat"><div class="stat-label">Key event</div><div class="stat-value">1492</div></div>
+        <div class="stat"><div class="stat-label">Great power</div><div class="stat-value">Spain</div></div>
+        <div class="stat"><div class="stat-label">Ended by</div><div class="stat-value">Revolutions</div></div>
+      </div>
+    </div>
+    <div class="civ-grid reveal" id="grid-early_modern"></div>
+  </section>
+
+  <!-- Modern -->
+  <section class="era-section" id="era-modern" data-era="modern">
+    <div class="era-header reveal">
+      <div>
+        <div class="era-number">Era 05</div>
+        <h2 class="era-title">The Modern era</h2>
+        <p class="era-dates">1800 – present</p>
+        <p class="era-summary">Steam power and electricity compressed geography. Two world wars remade the political map. Decolonisation liberated billions, yet new forms of dependency followed. The late 20th century witnessed the fastest economic growth in human history, and its most consequential ecological bargain.</p>
+      </div>
+      <div class="era-stats">
+        <div class="stat"><div class="stat-label">Span</div><div class="stat-value">225 yrs</div></div>
+        <div class="stat"><div class="stat-label">Key force</div><div class="stat-value">Industry</div></div>
+        <div class="stat"><div class="stat-label">Great power</div><div class="stat-value">USA</div></div>
+        <div class="stat"><div class="stat-label">Defining ?</div><div class="stat-value">Climate</div></div>
+      </div>
+    </div>
+    <div class="civ-grid reveal" id="grid-modern"></div>
+  </section>
+
+  </div><!-- /eras -->
+
+  <!-- INTERACTIVE MAP -->
+  <section class="map-section" id="map">
+    <p class="section-eyebrow reveal">Interactive atlas</p>
+    <h2 class="section-title reveal">Civilisations on the map</h2>
+    <p class="section-sub reveal">Select an era to see where power, culture, and trade were centred.</p>
+
+    <div class="era-btn-bar reveal" id="map-era-btns"></div>
+
+    <div class="map-container reveal" id="map-wrap">
+      <svg id="map-svg" viewBox="0 0 900 460"></svg>
+      <div id="map-dots" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></div>
+      <div class="map-tooltip" id="map-tooltip"></div>
+    </div>
+  </section>
+
+  <!-- TIMELINE STRIP -->
+  <section class="timeline-section" id="timeline">
+    <p class="section-eyebrow reveal">At a glance</p>
+    <h2 class="section-title reveal">5,000 years in one view</h2>
+    <p class="section-sub reveal">The relative weight of each era — and how quickly the modern world arrived.</p>
+    <div class="timeline-strip reveal" id="tl-strip"></div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about-section" id="about">
+    <div class="reveal">
+      <p class="about-label">About Chronos</p>
+      <h2 class="about-title">Why map history?</h2>
+    </div>
+    <div class="about-body reveal">
+      <p>History is usually taught as a series of national stories: the rise of Rome, the spread of Islam, the birth of the USA. Chronos tries something different — it maps the <em>connections</em> between civilisations: the trade routes, the borrowed ideas, the military shocks that rippled across continents.</p>
+      <p>The goal is not to provide every fact, but to give you a mental model of how the world's complexity accumulated. Each era built on the last. The Axial Age philosophers argued with each other across centuries. The Ottoman Empire was the Roman Empire's bureaucratic heir. The Industrial Revolution required coal, iron, and colonies — a supply chain spanning four continents.</p>
+      <p>Hover a dot, click a card, follow a thread. The deeper you go, the more connected it becomes.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>Chronos — World History Map</span>
+    <p>Build and designed by Francis</p>
+    <span>Built with D3.js · Data spans 3000 BCE to present</span>
+  </footer>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script>
+const ERAS = {
+  ancient:     { label:'Ancient',      dates:'3000–500 BCE', startBCE:3000, endBCE:500, pct:38 },
+  classical:   { label:'Classical',    dates:'500 BCE–500 CE', startBCE:500, endBCE:-500, pct:17 },
+  medieval:    { label:'Medieval',     dates:'500–1400 CE', startBCE:-500, endBCE:-1400, pct:15 },
+  early_modern:{ label:'Early modern', dates:'1400–1800', startBCE:-1400, endBCE:-1800, pct:7 },
+  modern:      { label:'Modern',       dates:'1800–present', startBCE:-1800, endBCE:-2025, pct:4 },
+};
+
+const CIVS = {
+  ancient: [
+    { name:'Egyptian Old Kingdom', dates:'~2686–2181 BCE', type:'empire', color:'#D85A30', desc:'Pyramid Age; pharaohs unified the Nile valley and built monuments that still stand.', lat:26, lon:31 },
+    { name:'Mesopotamia / Sumer', dates:'~3500–2000 BCE', type:'empire', color:'#D85A30', desc:'Earliest writing (cuneiform), city-states, the wheel, and the ziggurat.', lat:32, lon:44 },
+    { name:'Indus Valley', dates:'~2600–1900 BCE', type:'trade', color:'#378ADD', desc:'Mohenjo-daro and Harappa featured grid streets, plumbing, and standard weights.', lat:27, lon:68 },
+    { name:'Shang Dynasty', dates:'~1600–1046 BCE', type:'empire', color:'#D85A30', desc:'Oracle bones, bronze casting, and the emergence of Chinese script.', lat:34, lon:114 },
+    { name:'Minoan Crete', dates:'~2700–1450 BCE', type:'trade', color:'#378ADD', desc:'First European civilisation; seafaring traders across the Aegean.', lat:35.2, lon:25 },
+    { name:'Assyrian Empire', dates:'~900–612 BCE', type:'empire', color:'#D85A30', desc:'Massive armies and the first great library — assembled at Nineveh.', lat:36, lon:43 },
+    { name:'Olmec (Mexico)', dates:'~1500–400 BCE', type:'empire', color:'#D85A30', desc:'Mother culture of Mesoamerica; colossal stone heads, ceremonial centres.', lat:17.5, lon:-94 },
+  ],
+  classical: [
+    { name:'Athenian Democracy', dates:'~508–322 BCE', type:'republic', color:'#1D9E75', desc:'Birth of democracy, philosophy, theatre, and the idea of rational argument.', lat:38, lon:23.7 },
+    { name:'Persian Achaemenid', dates:'550–330 BCE', type:'empire', color:'#D85A30', desc:'Largest empire to that point; the Royal Road and tolerance of subject peoples.', lat:32, lon:51 },
+    { name:'Maurya Empire', dates:'322–185 BCE', type:'empire', color:'#D85A30', desc:'Ashoka spread Buddhism across Asia after renouncing warfare.', lat:22, lon:81 },
+    { name:'Han Dynasty', dates:'206 BCE–220 CE', type:'empire', color:'#D85A30', desc:'Silk Road, paper, civil service exams — the model for Chinese governance.', lat:35, lon:108 },
+    { name:'Roman Republic/Empire', dates:'509 BCE–476 CE', type:'empire', color:'#D85A30', desc:'Law, roads, Latin; at its peak ruled over 50 million people.', lat:41.9, lon:12.5 },
+    { name:'Carthage', dates:'814–146 BCE', type:'trade', color:'#378ADD', desc:'Dominant Mediterranean trading power, before three wars with Rome ended it.', lat:36.8, lon:10.3 },
+    { name:'Maya Preclassic', dates:'~2000 BCE–250 CE', type:'empire', color:'#D85A30', desc:'Writing, astronomy, calendar systems, and monumental architecture.', lat:15, lon:-90 },
+  ],
+  medieval: [
+    { name:'Byzantine Empire', dates:'330–1453 CE', type:'empire', color:'#D85A30', desc:'Preserved Greek-Roman knowledge for a millennium; Constantinople as crossroads.', lat:41, lon:29 },
+    { name:'Islamic Caliphate', dates:'632–1258 CE', type:'empire', color:'#D85A30', desc:'Golden Age of science, mathematics, medicine, and philosophy.', lat:24, lon:45 },
+    { name:'Tang Dynasty', dates:'618–907 CE', type:'empire', color:'#D85A30', desc:'Cosmopolitan China: poetry, block printing, and the most populous capital on earth.', lat:34, lon:109 },
+    { name:'Viking expansion', dates:'793–1066 CE', type:'trade', color:'#378ADD', desc:'Reached North America; traders from Dublin to Baghdad.', lat:60, lon:5 },
+    { name:'Mali Empire', dates:'1235–1600 CE', type:'empire', color:'#D85A30', desc:'Mansa Musa\'s pilgrimage moved enough gold to destabilise Cairo\'s economy.', lat:12, lon:-8 },
+    { name:'Mongol Empire', dates:'1206–1368 CE', type:'empire', color:'#D85A30', desc:'Largest contiguous empire ever; the Pax Mongolica opened Eurasian trade.', lat:47, lon:107 },
+    { name:'Aztec Triple Alliance', dates:'1428–1521 CE', type:'empire', color:'#D85A30', desc:'Tenochtitlan, on a lake in Mexico, was larger than any European city.', lat:19.4, lon:-99 },
+  ],
+  early_modern: [
+    { name:'Ottoman Empire', dates:'1299–1922 CE', type:'empire', color:'#D85A30', desc:'Bridge between East and West; reached its peak under Suleiman the Magnificent.', lat:39, lon:35 },
+    { name:'Ming Dynasty', dates:'1368–1644 CE', type:'empire', color:'#D85A30', desc:'Great Wall rebuilt; Zheng He\'s voyages reached East Africa before Columbus sailed.', lat:32, lon:119 },
+    { name:'Inca Empire', dates:'1438–1533 CE', type:'empire', color:'#D85A30', desc:'Largest empire in the Americas; a road network across the Andes.', lat:-13, lon:-72 },
+    { name:'Renaissance Florence', dates:'~1400–1600', type:'trade', color:'#378ADD', desc:'Medici patronage; the rebirth of arts, humanism, and individual expression.', lat:43.8, lon:11.2 },
+    { name:'Mughal Empire', dates:'1526–1857 CE', type:'empire', color:'#D85A30', desc:'Taj Mahal; at peak, produced about 25% of world GDP.', lat:28, lon:77 },
+    { name:'Spanish colonial Americas', dates:'1492–1820s', type:'empire', color:'#D85A30', desc:'Columbian Exchange; silver from Potosí transformed the world economy.', lat:4, lon:-74 },
+    { name:'Scientific Revolution', dates:'~1543–1687', type:'turning', color:'#7F77DD', desc:'From Copernicus to Newton — observation and mathematics over received authority.', lat:52, lon:5 },
+  ],
+  modern: [
+    { name:'Industrial Revolution', dates:'~1760–1840', type:'turning', color:'#7F77DD', desc:'Steam power, factory system, urbanisation — the engine of modern inequality.', lat:52.5, lon:-1.5 },
+    { name:'French Revolution', dates:'1789–1799', type:'turning', color:'#7F77DD', desc:'Liberty, equality, fraternity; nation-states and citizens replace subjects.', lat:48.8, lon:2.3 },
+    { name:'Meiji Japan', dates:'1868–1912', type:'turning', color:'#7F77DD', desc:'The first non-Western nation to industrialise on its own terms.', lat:35.7, lon:139.7 },
+    { name:'British Empire peak', dates:'~1815–1914', type:'empire', color:'#D85A30', desc:'A quarter of the world\'s land surface; the first truly global power.', lat:51.5, lon:-0.1 },
+    { name:'World Wars & US rise', dates:'1914–1945', type:'turning', color:'#7F77DD', desc:'Two catastrophic wars remade the global order and ended European supremacy.', lat:38.9, lon:-77 },
+    { name:'Decolonisation', dates:'1945–1975', type:'turning', color:'#7F77DD', desc:'Dozens of new nations; the Cold War immediately contested their futures.', lat:0, lon:20 },
+    { name:'Digital revolution', dates:'~1970–present', type:'turning', color:'#7F77DD', desc:'Internet and computing compress space and time; AI begins to automate cognition.', lat:37.4, lon:-122 },
+  ],
+};
+
+const TYPE_LABELS = { empire:'Empire / Kingdom', republic:'City-state / Republic', trade:'Trade hub', turning:'Turning point' };
+
+function tagClass(type) {
+  return { empire:'tag-empire', republic:'tag-republic', trade:'tag-trade', turning:'tag-turning' }[type] || 'tag-empire';
+}
+
+// Build civ grids
+Object.entries(CIVS).forEach(([era, civs]) => {
+  const grid = document.getElementById('grid-' + era);
+  if (!grid) return;
+  grid.innerHTML = civs.map(c => `
+    <div class="civ-card" onclick="window.open('https://en.wikipedia.org/wiki/${encodeURIComponent(c.name)}','_blank')">
+      <div class="civ-name"><span class="civ-dot" style="background:${c.color}"></span>${c.name}</div>
+      <div class="civ-dates">${c.dates}</div>
+      <div class="civ-desc">${c.desc}</div>
+      <span class="civ-tag ${tagClass(c.type)}">${TYPE_LABELS[c.type]}</span>
+    </div>`).join('');
+});
+
+// Build timeline strip
+const tlStrip = document.getElementById('tl-strip');
+const totalYears = 5025;
+const eraOrder = ['ancient','classical','medieval','early_modern','modern'];
+let tlHTML = '<div class="tl-axis"></div><div class="tl-eras">';
+eraOrder.forEach(key => {
+  const e = ERAS[key];
+  tlHTML += `<div class="tl-era" style="flex:${e.pct}" onclick="document.getElementById('era-${key}').scrollIntoView({behavior:'smooth'})">
+    <div class="tl-era-label">${e.label}</div>
+    <div class="tl-era-dates">${e.dates}</div>
+  </div>`;
+});
+tlHTML += '</div>';
+tlStrip.innerHTML = tlHTML;
+
+// Map
+let currentMapEra = 'ancient';
+const mapEraBar = document.getElementById('map-era-btns');
+eraOrder.forEach(key => {
+  const btn = document.createElement('button');
+  btn.className = 'map-era-btn' + (key === 'ancient' ? ' active' : '');
+  btn.textContent = ERAS[key].label;
+  btn.onclick = () => setMapEra(key);
+  mapEraBar.appendChild(btn);
+});
+
+function latLonToPct(lat, lon) {
+  const x = ((lon + 180) / 360) * 100;
+  const rawY = (1 - (lat + 90) / 180) * 100;
+  return [x, rawY * 0.85 + 3];
+}
+
+function setMapEra(key) {
+  currentMapEra = key;
+  document.querySelectorAll('.map-era-btn').forEach((b,i) => b.classList.toggle('active', eraOrder[i] === key));
+  renderMapDots(key);
+}
+
+function renderMapDots(key) {
+  const layer = document.getElementById('map-dots');
+  const tooltip = document.getElementById('map-tooltip');
+  layer.innerHTML = '';
+  layer.style.pointerEvents = 'auto';
+  CIVS[key].forEach(civ => {
+    const [px, py] = latLonToPct(civ.lat, civ.lon);
+    const dot = document.createElement('div');
+    dot.className = 'event-dot-map';
+    dot.style.cssText = `left:${px}%;top:${py}%;background:${civ.color};pointer-events:auto;`;
+    dot.addEventListener('mouseenter', e => {
+      tooltip.style.display = 'block';
+      tooltip.innerHTML = `<strong style="font-size:13px;display:block;margin-bottom:4px">${civ.name}</strong><span style="color:var(--amber);font-size:11px;display:block;margin-bottom:6px">${civ.dates}</span><span style="font-size:12px;color:var(--text-muted)">${civ.desc}</span>`;
+      const wrap = document.getElementById('map-wrap');
+      const wr = wrap.getBoundingClientRect();
+      const dr = dot.getBoundingClientRect();
+      let left = dr.left - wr.left + 14;
+      let top = dr.top - wr.top - 10;
+      if (left + 230 > wr.width) left = dr.left - wr.left - 235;
+      tooltip.style.left = Math.max(4, left) + 'px';
+      tooltip.style.top = Math.max(4, top) + 'px';
+    });
+    dot.addEventListener('mouseleave', () => tooltip.style.display = 'none');
+    layer.appendChild(dot);
+  });
+}
+
+d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(world => {
+  const proj = d3.geoNaturalEarth1().scale(153).translate([450, 230]);
+  const path = d3.geoPath(proj);
+  d3.select('#map-svg')
+    .selectAll('path')
+    .data(topojson.feature(world, world.objects.countries).features)
+    .join('path')
+    .attr('d', path)
+    .attr('fill', '#2a2620')
+    .attr('stroke', '#1a1814')
+    .attr('stroke-width', '0.5');
+  renderMapDots('ancient');
+}).catch(() => {
+  document.getElementById('map-wrap').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-muted);font-size:13px">Map could not load — check network connection.</div>';
+});
+
+// Spine navigation
+const spineEl = document.getElementById('spine');
+const spineData = [
+  { id:'hero', label:'Intro', top: 0.08 },
+  { id:'era-ancient', label:'Ancient', top: 0.18 },
+  { id:'era-classical', label:'Classical', top: 0.32 },
+  { id:'era-medieval', label:'Medieval', top: 0.47 },
+  { id:'era-early_modern', label:'Early mod.', top: 0.62 },
+  { id:'era-modern', label:'Modern', top: 0.74 },
+  { id:'map', label:'Map', top: 0.84 },
+  { id:'timeline', label:'Timeline', top: 0.92 },
+];
+
+spineData.forEach(item => {
+  const dot = document.createElement('div');
+  dot.className = 'spine-dot';
+  dot.style.top = (item.top * 100) + '%';
+  dot.onclick = () => document.getElementById(item.id).scrollIntoView({ behavior:'smooth' });
+
+  const lbl = document.createElement('div');
+  lbl.className = 'spine-label';
+  lbl.style.top = (item.top * 100) + '%';
+  lbl.textContent = item.label;
+  lbl.onclick = dot.onclick;
+
+  spineEl.appendChild(dot);
+  spineEl.appendChild(lbl);
+  item._dot = dot;
+  item._lbl = lbl;
+});
+
+// Intersection observer for spine + reveal
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// Active spine dot
+const sectionObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const id = e.target.id;
+    spineData.forEach(item => {
+      const active = item.id === id;
+      item._dot.classList.toggle('active', active);
+      item._lbl.classList.toggle('active', active);
+    });
+  });
+}, { threshold: 0.4 });
+
+['hero', 'era-ancient', 'era-classical', 'era-medieval', 'era-early_modern', 'era-modern', 'map', 'timeline'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) sectionObserver.observe(el);
+});
+</script>
+</body>
+</html>
